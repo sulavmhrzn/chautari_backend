@@ -1,3 +1,4 @@
+from datetime import timedelta
 from pathlib import Path
 
 import environ
@@ -119,3 +120,18 @@ API_VERSION = env("API_VERSION", default="1.0.0")
 
 # Custom user model
 AUTH_USER_MODEL = "authentication.User"
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ),
+    "EXCEPTION_HANDLER": "utils.exception_handler.custom_exception_handler",
+}
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(days=env("ACCESS_TOKEN_LIFETIME", default=1)),
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=env("REFRESH_TOKEN_LIFETIME", default=3)),
+    "UPDATE_LAST_LOGIN": True,
+}
+
+VALID_EMAIL_DOMAINS = env.list("VALID_EMAIL_DOMAINS", default=[])
