@@ -26,6 +26,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "apps.authentication",
 ]
 
 MIDDLEWARE = [
@@ -115,3 +116,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 DJANGO_ENVIRONMENT = env("DJANGO_ENVIRONMENT")
 API_VERSION = env("API_VERSION", default="1.0.0")
+
+# Custom user model
+AUTH_USER_MODEL = "authentication.User"
