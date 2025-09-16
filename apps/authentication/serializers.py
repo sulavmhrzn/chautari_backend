@@ -69,5 +69,6 @@ class UserReadSerializer(serializers.ModelSerializer):
             "date_joined",
             "is_active",
             "last_login",
+            "email_verified",
             "profile",
         ]

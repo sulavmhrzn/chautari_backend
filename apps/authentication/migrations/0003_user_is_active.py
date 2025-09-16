@@ -4,15 +4,14 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('authentication', '0002_user_groups_user_is_superuser_user_user_permissions'),
+        ("authentication", "0002_user_groups_user_is_superuser_user_user_permissions"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='user',
-            name='is_active',
+            model_name="user",
+            name="is_active",
             field=models.BooleanField(default=True),
         ),
     ]
