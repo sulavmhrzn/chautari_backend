@@ -5,7 +5,7 @@ from django.contrib.auth.password_validation import (
 from django.core.exceptions import ValidationError
 from rest_framework import serializers
 
-from .models import User
+from .models import Profile, User
 
 
 class UserWriteSerializer(serializers.ModelSerializer):
@@ -45,7 +45,21 @@ class UserWriteSerializer(serializers.ModelSerializer):
         return user
 
 
+class ProfileReadSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ["phone_number", "is_phone_number_verified"]
+
+
+class ProfileWriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Profile
+        fields = ["phone_number"]
+
+
 class UserReadSerializer(serializers.ModelSerializer):
+    profile = ProfileReadSerializer()
+
     class Meta:
         model = User
         fields = [
@@ -55,4 +69,5 @@ class UserReadSerializer(serializers.ModelSerializer):
             "date_joined",
             "is_active",
             "last_login",
+            "profile",
         ]

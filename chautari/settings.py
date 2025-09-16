@@ -27,8 +27,10 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "rest_framework",
+    "phonenumber_field",
     "apps.authentication",
 ]
+
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -135,3 +137,4 @@ SIMPLE_JWT = {
 }
 
 VALID_EMAIL_DOMAINS = env.list("VALID_EMAIL_DOMAINS", default=[])
+PHONENUMBER_DEFAULT_REGION = "NP"

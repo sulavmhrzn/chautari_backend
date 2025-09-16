@@ -6,6 +6,7 @@ from django.contrib.auth.models import (
 )
 from django.db import models
 from django.utils import timezone
+from phonenumber_field.modelfields import PhoneNumberField
 
 
 class UserManager(BaseUserManager):
@@ -64,3 +65,12 @@ class User(AbstractBaseUser, PermissionsMixin):
     EMAIL_FIELD = ["email"]
     USERNAME_FIELD = "email"
     REQUIRED_FIELDS = ["first_name", "last_name"]
+
+
+class Profile(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name="profile")
+    phone_number = PhoneNumberField(blank=True, null=True)
+    is_phone_number_verified = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.user.email

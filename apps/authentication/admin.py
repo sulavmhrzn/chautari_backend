@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
 from django.utils.translation import gettext_lazy as _
 
-from .models import User
+from .models import Profile, User
 
 
 @admin.register(User)
@@ -43,3 +43,8 @@ class UserAdmin(BaseUserAdmin):
     list_display = ("email", "first_name", "last_name", "is_staff")
     list_filter = ("is_staff", "is_superuser", "is_active", "groups")
     ordering = ("email",)
+
+
+@admin.register(Profile)
+class ProfileAdmin(admin.ModelAdmin):
+    list_display = ("user", "phone_number", "is_phone_number_verified")
