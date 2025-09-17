@@ -21,4 +21,5 @@ def send_welcome_email(first_name, email):
 
 @shared_task
 def send_email_verification():
+    # TODO: Implement email verification logic (e.g., send verification email to user)
     pass
