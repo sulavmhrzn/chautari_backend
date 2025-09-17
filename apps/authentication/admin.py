@@ -40,9 +40,9 @@ class UserAdmin(BaseUserAdmin):
             },
         ),
     )
-    list_display = ("email", "first_name", "last_name", "is_staff")
+    list_display = ("email", "first_name", "last_name", "is_staff", "date_joined")
     list_filter = ("is_staff", "is_superuser", "is_active", "groups")
-    ordering = ("email",)
+    ordering = ("email", "date_joined")
 
 
 @admin.register(Profile)
