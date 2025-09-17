@@ -29,6 +29,9 @@ format:  ## Format code (if you use black/ruff)
 
 check: lint test  ## Run all checks (lint + test)
 
+worker:
+	uv run celery -A chautari worker -l INFO
+
 help:  ## Show this help message
 	@echo "Available commands:"
 	@echo ""
