@@ -3,7 +3,9 @@ import logging
 from celery import shared_task
 from django.conf import settings
 from django.core.mail import send_mail
+from django.utils import timezone
 
+from apps.authentication.models import VerificationToken
 from apps.listings.models import User
 from utils.tokens import create_email_verification_token
 
@@ -31,3 +33,10 @@ def send_welcome_and_verification_email(first_name, email):
         recipient_list=[email],
     )
     logger.info(f"Sent welcome email to {email}")
+
+
+@shared_task
+def delete_verification_tokens():
+    tokens = VerificationToken.objects.filter(expires_at__lte=timezone.now())
+    count, _ = tokens.delete()
+    logger.info(f"deleted {count} expired verification tokens")
