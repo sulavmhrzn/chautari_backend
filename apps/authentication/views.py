@@ -9,6 +9,7 @@ from apps.authentication.serializers import (
     ProfileWriteSerializer,
     UserReadSerializer,
     UserWriteSerializer,
+    VerificationTokenSerializer,
 )
 from utils.envelope import Envelope
 
@@ -78,3 +79,19 @@ class ProfileView(APIView):
         return Envelope.error_response(
             error=serializer.errors, status_code=status.HTTP_400_BAD_REQUEST
         )
+
+
+class VerifyEmailView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = VerificationTokenSerializer(
+            data=request.data, context={"request": request}
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Envelope.success_response("user verified")
+        else:
+            return Envelope.error_response(
+                error=serializer.errors, status_code=status.HTTP_401_UNAUTHORIZED
+            )

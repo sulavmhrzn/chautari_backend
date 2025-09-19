@@ -6,6 +6,7 @@ from apps.authentication.views import (
     CustomTokenObtainPairView,
     ProfileView,
     SignUpView,
+    VerifyEmailView,
 )
 
 urlpatterns = [
@@ -14,4 +15,5 @@ urlpatterns = [
     path("token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("me/", CurrentUserView.as_view(), name="current_user"),
     path("me/profile/", ProfileView.as_view(), name="current_user_profile"),
+    path("verify-email/", VerifyEmailView.as_view(), name="verify_email"),
 ]
