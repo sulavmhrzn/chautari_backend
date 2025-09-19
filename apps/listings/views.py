@@ -11,7 +11,7 @@ from apps.listings.serializers import (
     ListingReadSerializer,
     ListingWriteSerializer,
 )
-from apps.permissions import IsListingOwner
+from apps.permissions import IsEmailVerified, IsListingOwner
 from utils.envelope import Envelope
 
 
@@ -48,10 +48,8 @@ class ListingView(ViewSet):
     def get_permissions(self):
         if self.request.method in permissions.SAFE_METHODS:
             return [permissions.AllowAny()]
-        elif self.request.method in ["DELETE"]:
-            print(self.kwargs)
-            return [permissions.IsAuthenticated(), IsListingOwner()]
-        return [permissions.IsAuthenticated()]
+        elif self.request.method in ["POST", "PUT", "PATCH", "DELETE"]:
+            return [permissions.IsAuthenticated(), IsEmailVerified(), IsListingOwner()]
 
     def list(self, request):
         listings = self.get_queryset()
