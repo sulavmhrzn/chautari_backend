@@ -8,6 +8,8 @@ from django.core.exceptions import ValidationError
 from rest_framework import serializers
 from rest_framework.exceptions import APIException
 
+from utils.constants import TOKEN_ERRORS, USER_ERRORS
+
 from .models import TOKEN_TYPES, Profile, User, VerificationToken
 
 logger = logging.getLogger(__name__)
@@ -85,7 +87,7 @@ class VerificationTokenSerializer(serializers.Serializer):
     def validate_token(self, value):
         """Validate token format and length."""
         if len(value) < 6:
-            raise serializers.ValidationError("invalid token")
+            raise serializers.ValidationError(TOKEN_ERRORS.INVALID_FORMAT)
         return value
 
     def validate(self, attrs):
@@ -98,29 +100,29 @@ class VerificationTokenSerializer(serializers.Serializer):
         user = request.user
 
         if not user:
-            raise serializers.ValidationError("user does not exist")
+            raise serializers.ValidationError(USER_ERRORS.USER_NOT_FOUND)
 
         if not token:
-            raise serializers.ValidationError("token is required")
+            raise serializers.ValidationError(TOKEN_ERRORS.TOKEN_REQUIRED)
 
         try:
             obj = VerificationToken.objects.get(
                 token=token, token_type=TOKEN_TYPES.EMAIL_VERIFICATION, user=user
             )
         except VerificationToken.DoesNotExist:
-            raise serializers.ValidationError("invalid token")
+            raise serializers.ValidationError(TOKEN_ERRORS.INVALID_TOKEN)
         except Exception as exc:
             logger.error(exc)
             raise APIException()
 
         if obj.is_expired():
-            raise serializers.ValidationError("token expired")
+            raise serializers.ValidationError(TOKEN_ERRORS.TOKEN_EXPIRED)
 
         if obj.is_used:
-            raise serializers.ValidationError("token already used")
+            raise serializers.ValidationError(TOKEN_ERRORS.TOKEN_ALREADY_USED)
 
         if not obj.is_valid():
-            raise serializers.ValidationError("invalid token")
+            raise serializers.ValidationError(TOKEN_ERRORS.INVALID_TOKEN)
 
         return attrs
 

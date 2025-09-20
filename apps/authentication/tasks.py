@@ -40,3 +40,23 @@ def delete_verification_tokens():
     tokens = VerificationToken.objects.filter(expires_at__lte=timezone.now())
     count, _ = tokens.delete()
     logger.info(f"deleted {count} expired verification tokens")
+
+
+@shared_task
+def send_verification_email(first_name, email, token):
+    """
+    Asynchronously send email with verification token to an unverified user.
+    """
+
+    # TODO: Use django template
+    message = f"""We are excited to have you on the platform.
+    Your email verification token is {token}.
+    This token will expire in {settings.EMAIL_VERIFICATION_TOKEN_EXPIRES_IN_MINUTES} minutes.
+    """
+    send_mail(
+        subject=f"Welcome to Chautari, {first_name}",
+        message=message,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[email],
+    )
+    logger.info(f"Sent verification email to {email}")
