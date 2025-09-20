@@ -11,7 +11,9 @@ from apps.authentication.serializers import (
     UserWriteSerializer,
     VerificationTokenSerializer,
 )
+from apps.authentication.tasks import send_verification_email
 from utils.envelope import Envelope
+from utils.tokens import create_email_verification_token
 
 
 class SignUpView(APIView):
@@ -85,13 +87,33 @@ class VerifyEmailView(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
+        if request.user.email_verified:
+            return Envelope.success_response("email already verified")
+
         serializer = VerificationTokenSerializer(
             data=request.data, context={"request": request}
         )
         if serializer.is_valid():
             serializer.save()
-            return Envelope.success_response("user verified")
+            return Envelope.success_response("email verified")
         else:
             return Envelope.error_response(
                 error=serializer.errors, status_code=status.HTTP_401_UNAUTHORIZED
             )
+
+
+class SendEmailVerificationView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        if request.user.email_verified:
+            return Envelope.success_response("email already verified")
+        verification_token = create_email_verification_token(request.user)
+        send_verification_email.delay(
+            first_name=request.user.first_name,
+            email=request.user.email,
+            token=verification_token.token,
+        )
+        return Envelope.success_response(
+            data="email sent", status_code=status.HTTP_202_ACCEPTED
+        )

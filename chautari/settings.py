@@ -2,6 +2,7 @@ from datetime import timedelta
 from pathlib import Path
 
 import environ
+from celery.beat import crontab
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -142,7 +143,6 @@ SIMPLE_JWT = {
 VALID_EMAIL_DOMAINS = env.list("VALID_EMAIL_DOMAINS", default=[])
 PHONENUMBER_DEFAULT_REGION = "NP"
 
-CELERY_BROKER_URL = env("CELERY_BROKER_URL", default="redis://localhost:6379/0")
 
 EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
 EMAIL_HOST = env("EMAIL_HOST")
@@ -154,3 +154,11 @@ DEFAULT_FROM_EMAIL = env("DEFAULT_FROM_EMAIL")
 EMAIL_VERIFICATION_TOKEN_EXPIRES_IN_MINUTES = env.int(
     "EMAIL_VERIFICATION_TOKEN_EXPIRES_IN_MINUTES", 20
 )
+
+CELERY_BROKER_URL = env("CELERY_BROKER_URL", default="redis://localhost:6379/0")
+CELERY_BEAT_SCHEDULE = {
+    "delete_verification_tokens": {
+        "task": "apps.authentication.tasks.delete_verification_tokens",
+        "schedule": crontab(minute="*/15"),
+    }
+}

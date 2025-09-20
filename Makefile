@@ -31,6 +31,8 @@ check: lint test  ## Run all checks (lint + test)
 
 worker:
 	uv run celery -A chautari worker -l INFO
+beat:
+	uv run celery -A chautari beat --loglevel=INFO
 
 help:  ## Show this help message
 	@echo "Available commands:"
@@ -40,6 +42,10 @@ help:  ## Show this help message
 	@echo "  makemigrations   Create new database migrations"
 	@echo "  migrate          Apply database migrations"
 	@echo "  shell            Start Django shell"
+	@echo ""
+	@echo "Celery Commands:"
+	@echo "  worker           Start the celery worker"
+	@echo "  beat             Start the celery beat"
 	@echo ""
 	@echo "Development Commands:"
 	@echo "  install          Install dependencies"
