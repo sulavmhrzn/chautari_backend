@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "rest_framework",
     "phonenumber_field",
+    "django_filters",
     "apps.authentication",
     "apps.listings",
 ]

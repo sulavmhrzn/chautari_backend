@@ -39,6 +39,7 @@ class ListingReadSerializer(serializers.ModelSerializer):
     seller = SellerSerializer()
     category = CategorySerializer()
     images = ListingImageSerializer(many=True)
+    condition = serializers.SerializerMethodField()
 
     class Meta:
         model = Listing
@@ -50,12 +51,16 @@ class ListingReadSerializer(serializers.ModelSerializer):
             "price",
             "seller",
             "images",
+            "condition",
             "is_sold",
             "is_active",
             "category",
             "created_at",
             "updated_at",
         )
+
+    def get_condition(self, condition):
+        return condition.get_condition_display()
 
 
 class ListingWriteSerializer(serializers.ModelSerializer):
@@ -69,6 +74,7 @@ class ListingWriteSerializer(serializers.ModelSerializer):
             "price",
             "category",
             "images",
+            "condition",
             "seller",
         )
         read_only_fields = ["seller"]
@@ -82,7 +88,6 @@ class ListingWriteSerializer(serializers.ModelSerializer):
         return listing
 
     def update(self, instance, validated_data):
-        print(instance)
         images_data = validated_data.pop("images", [])
         for image_data in images_data:
             ListingImage.objects.create(listing=instance, image=image_data)

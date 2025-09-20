@@ -1,10 +1,13 @@
 from django.db.models import Count
 from django.shortcuts import get_object_or_404
+from django_filters import rest_framework as filters
 from rest_framework import permissions, status
+from rest_framework.filters import OrderingFilter
 from rest_framework.generics import GenericAPIView
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.viewsets import ViewSet
 
+from apps.listings.filters import ListingFilter
 from apps.listings.models import Category, Listing
 from apps.listings.serializers import (
     CategoryReadSerializer,
@@ -29,6 +32,9 @@ class CategoryView(GenericAPIView):
 class ListingView(ViewSet):
     lookup_field = "slug"
     parser_classes = [JSONParser, FormParser, MultiPartParser]
+    filterset_class = ListingFilter
+    filter_backends = [filters.DjangoFilterBackend, OrderingFilter]
+    ordering_fields = ["price", "created_at"]
 
     def get_queryset(self):
         return (
@@ -37,6 +43,11 @@ class ListingView(ViewSet):
             .prefetch_related("images")
             .order_by("-created_at", "is_sold")
         )
+
+    def filter_queryset(self, queryset):
+        for backend in self.filter_backends:
+            queryset = backend().filter_queryset(self.request, queryset, self)
+        return queryset
 
     def get_object(self):
         obj = get_object_or_404(
@@ -52,7 +63,7 @@ class ListingView(ViewSet):
             return [permissions.IsAuthenticated(), IsEmailVerified(), IsListingOwner()]
 
     def list(self, request):
-        listings = self.get_queryset()
+        listings = self.filter_queryset(self.get_queryset())
         serializer = ListingReadSerializer(
             listings, many=True, context={"request": request}
         )
