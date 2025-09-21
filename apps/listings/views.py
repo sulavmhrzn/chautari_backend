@@ -1,4 +1,4 @@
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404
 from django_filters import rest_framework as filters
 from rest_framework import permissions, status
@@ -116,3 +116,45 @@ class ListingView(ViewSet):
         return Envelope.error_response(
             error=serializer.errors, status_code=status.HTTP_400_BAD_REQUEST
         )
+
+
+class MyListingsView(ListingView):
+    def get_permissions(self):
+        return [permissions.IsAuthenticated(), IsEmailVerified()]
+
+    def get_queryset(self):
+        return Listing.objects.filter(seller=self.request.user)
+
+    def get_object(self):
+        obj = get_object_or_404(self.get_queryset(), slug=self.kwargs.get("slug"))
+        self.check_object_permissions(self.request, obj)
+        return obj
+
+    def mark_as_sold(self, request, *args, **kwargs):
+        """Mark listing as sold"""
+        obj = self.get_object()
+        obj.mark_sold()
+        return Envelope.success_response(data={"detail": "marked as sold"})
+
+    def deactivate(self, request, *args, **kwargs):
+        """Deactivate listing (hide from public but keep for seller)"""
+        obj = self.get_object()
+        obj.mark_inactive()
+        return Envelope.success_response(data={"detail": "listing deactivated"})
+
+    def activate(self, request, *args, **kwargs):
+        """Reactivate a deactivated listing"""
+        obj = self.get_object()
+        obj.mark_active()
+        return Envelope.success_response(data={"detail": "listing activated"})
+
+    def stats(self, request, *args, **kwargs):
+        """Get seller's listing statistics"""
+        queryset = self.get_queryset()
+        stats = queryset.aggregate(
+            total_listings=Count("id"),
+            active_listings=Count("id", filter=Q(is_active=True)),
+            sold_listings=Count("id", filter=Q(is_sold=True)),
+            available_listings=Count("id", filter=Q(is_sold=False, is_active=True)),
+        )
+        return Envelope.success_response(data=stats)
