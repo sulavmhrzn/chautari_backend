@@ -50,6 +50,10 @@ class Listing(models.Model):
     def __str__(self):
         return self.title
 
+    def mark_sold(self):
+        self.is_sold = True
+        self.save(update_fields=["is_sold"])
+
 
 class ListingImage(models.Model):
     listing = models.ForeignKey(

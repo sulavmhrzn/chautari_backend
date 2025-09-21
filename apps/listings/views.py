@@ -116,3 +116,16 @@ class ListingView(ViewSet):
         return Envelope.error_response(
             error=serializer.errors, status_code=status.HTTP_400_BAD_REQUEST
         )
+
+
+class MyListingsView(ListingView):
+    def get_permissions(self):
+        return [permissions.IsAuthenticated(), IsEmailVerified()]
+
+    def get_queryset(self):
+        return Listing.objects.filter(seller=self.request.user)
+
+    def mark_as_sold(self, request, *args, **kwargs):
+        obj = self.get_object()
+        obj.mark_sold()
+        return Envelope.success_response("marked as sold")
