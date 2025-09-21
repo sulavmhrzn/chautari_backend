@@ -13,7 +13,9 @@ urlpatterns = [
     ),
     path("@me/<slug:slug>/deactivate/", MyListingsView.as_view({"post": "deactivate"})),
     path("@me/<slug:slug>/activate/", MyListingsView.as_view({"post": "activate"})),
-    path("@me/stats/", MyListingsView.as_view({"get": "stats"})),
+    path(
+        "@me/stats/", MyListingsView.as_view({"get": "stats"}), name="my-listings-stats"
+    ),
     path(
         "<slug:slug>/",
         ListingView.as_view({"get": "retrieve", "delete": "destroy", "put": "update"}),

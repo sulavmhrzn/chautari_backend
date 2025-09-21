@@ -1,4 +1,4 @@
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.shortcuts import get_object_or_404
 from django_filters import rest_framework as filters
 from rest_framework import permissions, status
@@ -134,29 +134,27 @@ class MyListingsView(ListingView):
         """Mark listing as sold"""
         obj = self.get_object()
         obj.mark_sold()
-        return Envelope.success_response("marked as sold")
+        return Envelope.success_response(data={"detail": "marked as sold"})
 
     def deactivate(self, request, *args, **kwargs):
         """Deactivate listing (hide from public but keep for seller)"""
         obj = self.get_object()
         obj.mark_inactive()
-        return Envelope.success_response("listing deactivated")
+        return Envelope.success_response(data={"detail": "listing deactivated"})
 
     def activate(self, request, *args, **kwargs):
         """Reactivate a deactivated listing"""
         obj = self.get_object()
         obj.mark_active()
-        return Envelope.success_response("listing activated")
+        return Envelope.success_response(data={"detail": "listing activated"})
 
     def stats(self, request, *args, **kwargs):
         """Get seller's listing statistics"""
         queryset = self.get_queryset()
-        stats = {
-            "total_listings": queryset.count(),
-            "active_listings": queryset.filter(is_active=True).count(),
-            "sold_listings": queryset.filter(is_sold=True).count(),
-            "available_listings": queryset.filter(
-                is_sold=False, is_active=True
-            ).count(),
-        }
+        stats = queryset.aggregate(
+            total_listings=Count("id"),
+            active_listings=Count("id", filter=Q(is_active=True)),
+            sold_listings=Count("id", filter=Q(is_sold=True)),
+            available_listings=Count("id", filter=Q(is_sold=False, is_active=True)),
+        )
         return Envelope.success_response(data=stats)
