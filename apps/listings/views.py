@@ -125,7 +125,38 @@ class MyListingsView(ListingView):
     def get_queryset(self):
         return Listing.objects.filter(seller=self.request.user)
 
+    def get_object(self):
+        obj = get_object_or_404(self.get_queryset(), slug=self.kwargs.get("slug"))
+        self.check_object_permissions(self.request, obj)
+        return obj
+
     def mark_as_sold(self, request, *args, **kwargs):
+        """Mark listing as sold"""
         obj = self.get_object()
         obj.mark_sold()
         return Envelope.success_response("marked as sold")
+
+    def deactivate(self, request, *args, **kwargs):
+        """Deactivate listing (hide from public but keep for seller)"""
+        obj = self.get_object()
+        obj.mark_inactive()
+        return Envelope.success_response("listing deactivated")
+
+    def activate(self, request, *args, **kwargs):
+        """Reactivate a deactivated listing"""
+        obj = self.get_object()
+        obj.mark_active()
+        return Envelope.success_response("listing activated")
+
+    def stats(self, request, *args, **kwargs):
+        """Get seller's listing statistics"""
+        queryset = self.get_queryset()
+        stats = {
+            "total_listings": queryset.count(),
+            "active_listings": queryset.filter(is_active=True).count(),
+            "sold_listings": queryset.filter(is_sold=True).count(),
+            "available_listings": queryset.filter(
+                is_sold=False, is_active=True
+            ).count(),
+        }
+        return Envelope.success_response(data=stats)

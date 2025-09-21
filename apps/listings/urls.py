@@ -8,9 +8,12 @@ urlpatterns = [
     path("@me/", MyListingsView.as_view({"get": "list"}), name="my-listings"),
     path(
         "@me/<slug:slug>/mark-as-sold/",
-        MyListingsView.as_view({"patch": "mark_as_sold"}),
+        MyListingsView.as_view({"post": "mark_as_sold"}),
         name="mark-as-sold",
     ),
+    path("@me/<slug:slug>/deactivate/", MyListingsView.as_view({"post": "deactivate"})),
+    path("@me/<slug:slug>/activate/", MyListingsView.as_view({"post": "activate"})),
+    path("@me/stats/", MyListingsView.as_view({"get": "stats"})),
     path(
         "<slug:slug>/",
         ListingView.as_view({"get": "retrieve", "delete": "destroy", "put": "update"}),

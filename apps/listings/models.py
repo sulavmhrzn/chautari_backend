@@ -54,6 +54,14 @@ class Listing(models.Model):
         self.is_sold = True
         self.save(update_fields=["is_sold"])
 
+    def mark_inactive(self):
+        self.is_active = False
+        self.save(update_fields=["is_active"])
+
+    def mark_active(self):
+        self.is_active = True
+        self.save(update_fields=["is_active"])
+
 
 class ListingImage(models.Model):
     listing = models.ForeignKey(
