@@ -9,6 +9,7 @@ from rest_framework.viewsets import ViewSet
 
 from apps.listings.filters import ListingFilter
 from apps.listings.models import Category, Listing
+from apps.listings.paginations import ListingPageNumberPagination
 from apps.listings.serializers import (
     CategoryReadSerializer,
     ListingReadSerializer,
@@ -35,6 +36,7 @@ class ListingView(ViewSet):
     filterset_class = ListingFilter
     filter_backends = [filters.DjangoFilterBackend, OrderingFilter]
     ordering_fields = ["price", "created_at"]
+    pagination_class = ListingPageNumberPagination
 
     def get_queryset(self):
         return (
@@ -62,14 +64,22 @@ class ListingView(ViewSet):
         elif self.request.method in ["POST", "PUT", "PATCH", "DELETE"]:
             return [permissions.IsAuthenticated(), IsEmailVerified(), IsListingOwner()]
 
+    @property
+    def paginator(self):
+        if not hasattr(self, "_paginator"):
+            if self.pagination_class is None:
+                self._paginator = None
+            else:
+                self._paginator = self.pagination_class()
+        return self._paginator
+
     def list(self, request):
-        listings = self.filter_queryset(self.get_queryset())
+        queryset = self.filter_queryset(self.get_queryset())
+        page = self.paginator.paginate_queryset(queryset, self.request, self)
         serializer = ListingReadSerializer(
-            listings, many=True, context={"request": request}
+            page, many=True, context={"request": request}
         )
-        return Envelope.success_response(
-            data={"count": len(listings), "listings": serializer.data}
-        )
+        return self.paginator.get_paginated_response(serializer.data)
 
     def retrieve(self, request, slug):
         listing = get_object_or_404(self.get_queryset(), slug=slug, is_active=True)
