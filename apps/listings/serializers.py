@@ -120,8 +120,7 @@ class SavedListingWriteSerializer(serializers.ModelSerializer):
         user = kwargs.get("user")
         listing = self.validated_data.get("listing")
         try:
-            SavedListing.objects.create(user=user, listing=listing)
-            return "listing saved to your list"
+            return SavedListing.objects.create(user=user, listing=listing)
         except IntegrityError:
-            SavedListing.objects.get(user=user, listing=listing).delete()
-            return "listing deleted from your list"
+            SavedListing.objects.filter(user=user, listing=listing).delete()
+            return None

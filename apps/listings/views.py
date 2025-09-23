@@ -177,8 +177,17 @@ class SavedListingsView(ViewSet):
     def create(self, request):
         serializer = SavedListingWriteSerializer(data=request.data)
         if serializer.is_valid():
-            msg = serializer.save(user=request.user)
-            return Envelope.success_response(data={"detail": msg})
+            saved_listing = serializer.save(user=request.user)
+            if saved_listing is None:
+                return Envelope.success_response(
+                    data={"detail": "listings removed from your saved list."}
+                )
+            read_serializer = SavedListingReadSerializer(
+                saved_listing, context={"request": request}
+            )
+            return Envelope.success_response(
+                data={"saved_listings": read_serializer.data}
+            )
         return Envelope.error_response(
             error=serializer.errors, status_code=status.HTTP_400_BAD_REQUEST
         )
