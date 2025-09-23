@@ -174,7 +174,7 @@ class SavedListingsView(ViewSet):
         )
         return Envelope.success_response(data={"saved_listings": serializer.data})
 
-    def post(self, request):
+    def create(self, request):
         serializer = SavedListingWriteSerializer(data=request.data)
         if serializer.is_valid():
             msg = serializer.save(user=request.user)

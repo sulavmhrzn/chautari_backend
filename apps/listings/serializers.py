@@ -113,7 +113,7 @@ class SavedListingWriteSerializer(serializers.ModelSerializer):
 
     def validate_listing(self, value):
         if not value.is_active:
-            raise serializers.ValidationError("listing is deactivated")
+            raise serializers.ValidationError("Cannot save an inactive listing.")
         return value
 
     def save(self, **kwargs):

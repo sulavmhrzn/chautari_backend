@@ -22,7 +22,9 @@ urlpatterns = [
         "@me/stats/", MyListingsView.as_view({"get": "stats"}), name="my-listings-stats"
     ),
     path(
-        "@me/saved/", SavedListingsView.as_view({"get": "list"}), name="saved-listings"
+        "@me/saved/",
+        SavedListingsView.as_view({"get": "list", "post": "create"}),
+        name="saved-listings",
     ),
     path(
         "<slug:slug>/",
