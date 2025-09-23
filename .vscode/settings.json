@@ -10,4 +10,7 @@
             "source.unusedImports": "explicit"
         },
     },
+    "files.exclude": {
+        "**/.git": false
+    },
 }
