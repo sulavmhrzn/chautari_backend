@@ -69,3 +69,17 @@ class ListingImage(models.Model):
     )
     image = models.ImageField(upload_to="listing_images/")
     uploaded_at = models.DateTimeField(auto_now_add=True)
+
+
+class SavedListing(models.Model):
+    user = models.ForeignKey(
+        User, on_delete=models.CASCADE, related_name="saved_listings"
+    )
+    listing = models.ForeignKey(Listing, on_delete=models.CASCADE)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "listing"], name="unique_saved_listing"
+            )
+        ]

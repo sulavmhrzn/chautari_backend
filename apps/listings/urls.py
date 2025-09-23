@@ -1,6 +1,11 @@
 from django.urls import path
 
-from apps.listings.views import CategoryView, ListingView, MyListingsView
+from apps.listings.views import (
+    CategoryView,
+    ListingView,
+    MyListingsView,
+    SavedListingsView,
+)
 
 urlpatterns = [
     path("categories/", CategoryView.as_view(), name="categories"),
@@ -15,6 +20,9 @@ urlpatterns = [
     path("@me/<slug:slug>/activate/", MyListingsView.as_view({"post": "activate"})),
     path(
         "@me/stats/", MyListingsView.as_view({"get": "stats"}), name="my-listings-stats"
+    ),
+    path(
+        "@me/saved/", SavedListingsView.as_view({"get": "list"}), name="saved-listings"
     ),
     path(
         "<slug:slug>/",

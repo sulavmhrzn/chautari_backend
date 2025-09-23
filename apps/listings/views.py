@@ -8,12 +8,14 @@ from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.viewsets import ViewSet
 
 from apps.listings.filters import ListingFilter
-from apps.listings.models import Category, Listing
+from apps.listings.models import Category, Listing, SavedListing
 from apps.listings.paginations import ListingPageNumberPagination
 from apps.listings.serializers import (
     CategoryReadSerializer,
     ListingReadSerializer,
     ListingWriteSerializer,
+    SavedListingReadSerializer,
+    SavedListingWriteSerializer,
 )
 from apps.permissions import IsEmailVerified, IsListingOwner
 from utils.envelope import Envelope
@@ -158,3 +160,25 @@ class MyListingsView(ListingView):
             available_listings=Count("id", filter=Q(is_sold=False, is_active=True)),
         )
         return Envelope.success_response(data=stats)
+
+
+class SavedListingsView(ViewSet):
+    permission_classes = [permissions.IsAuthenticated, IsEmailVerified]
+
+    def get_queryset(self):
+        return SavedListing.objects.filter(user=self.request.user)
+
+    def list(self, request):
+        serializer = SavedListingReadSerializer(
+            self.get_queryset(), many=True, context={"request": request}
+        )
+        return Envelope.success_response(data={"saved_listings": serializer.data})
+
+    def post(self, request):
+        serializer = SavedListingWriteSerializer(data=request.data)
+        if serializer.is_valid():
+            msg = serializer.save(user=request.user)
+            return Envelope.success_response(data={"detail": msg})
+        return Envelope.error_response(
+            error=serializer.errors, status_code=status.HTTP_400_BAD_REQUEST
+        )

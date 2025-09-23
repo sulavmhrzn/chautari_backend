@@ -1,7 +1,7 @@
-from django.db import transaction
+from django.db import IntegrityError, transaction
 from rest_framework import serializers
 
-from .models import Category, Listing, ListingImage, User
+from .models import Category, Listing, ListingImage, SavedListing, User
 
 
 class CategoryReadSerializer(serializers.ModelSerializer):
@@ -95,3 +95,33 @@ class ListingWriteSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         return ListingReadSerializer(instance, context=self.context).data
+
+
+class SavedListingReadSerializer(serializers.ModelSerializer):
+    listing = ListingReadSerializer()
+
+    class Meta:
+        model = SavedListing
+        fields = ["listing"]
+
+
+class SavedListingWriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SavedListing
+        fields = ["user", "listing"]
+        read_only_fields = ["user"]
+
+    def validate_listing(self, value):
+        if not value.is_active:
+            raise serializers.ValidationError("listing is deactivated")
+        return value
+
+    def save(self, **kwargs):
+        user = kwargs.get("user")
+        listing = self.validated_data.get("listing")
+        try:
+            SavedListing.objects.create(user=user, listing=listing)
+            return "listing saved to your list"
+        except IntegrityError:
+            SavedListing.objects.get(user=user, listing=listing).delete()
+            return "listing deleted from your list"
