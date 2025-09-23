@@ -60,3 +60,19 @@ def send_verification_email(first_name, email, token):
         recipient_list=[email],
     )
     logger.info(f"Sent verification email to {email}")
+
+
+@shared_task
+def send_password_reset_email(first_name, email, token):
+    message = f"""
+    Hello, {first_name}. We received a password reset request for your account.
+    If this wasn't you, you can ignore this message.
+    Your password reset token is {token}.
+    This token will expire in {settings.PASSWORD_RESET_TOKEN_EXPIRES_IN_MINUTES} minutes."""
+    send_mail(
+        subject="Password Reset Request",
+        message=message,
+        from_email=settings.DEFAULT_FROM_EMAIL,
+        recipient_list=[email],
+    )
+    logger.info(f"Sent password reset email to {email}")

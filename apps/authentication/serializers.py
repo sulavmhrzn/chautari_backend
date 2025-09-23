@@ -81,12 +81,12 @@ class UserReadSerializer(serializers.ModelSerializer):
         ]
 
 
-class VerificationTokenSerializer(serializers.Serializer):
+class EmailVerificationTokenSerializer(serializers.Serializer):
     token = serializers.CharField(allow_blank=False)
 
     def validate_token(self, value):
         """Validate token format and length."""
-        if len(value) < 6:
+        if len(value) != 6:
             raise serializers.ValidationError(TOKEN_ERRORS.INVALID_FORMAT)
         return value
 
@@ -140,4 +140,85 @@ class VerificationTokenSerializer(serializers.Serializer):
         )
         obj.mark_as_used()
         request.user.verify_email()
+        return obj
+
+
+class SendResetPasswordTokenSerializer(serializers.Serializer):
+    email = serializers.EmailField(allow_blank=False)
+
+    def save(self, *args, **kwargs):
+        """
+        Create password reset token and send email.
+        Always returns success for security (no email enumeration).
+        """
+        email = self.validated_data.get("email")
+        try:
+            user = User.objects.get(email=email)
+            from utils.tokens import create_password_reset_token
+
+            reset_token = create_password_reset_token(user)
+            from apps.authentication.tasks import send_password_reset_email
+
+            send_password_reset_email.delay(
+                first_name=user.first_name, email=user.email, token=reset_token.token
+            )
+        except User.DoesNotExist:
+            pass
+        return {"message": "If the email exists, a reset link has been sent"}
+
+
+class ResetPasswordTokenSerializer(serializers.Serializer):
+    token = serializers.CharField(allow_blank=False)
+    password = serializers.CharField(allow_blank=False)
+
+    def validate_token(self, value):
+        if not value:
+            raise serializers.ValidationError(TOKEN_ERRORS.TOKEN_REQUIRED)
+        if len(value) != 6:
+            raise serializers.ValidationError(TOKEN_ERRORS.INVALID_FORMAT)
+        return value
+
+    def validate_password(self, value):
+        django_validate_password(value)
+        return value
+
+    def validate(self, attrs):
+        token = attrs.get("token")
+
+        try:
+            obj = VerificationToken.objects.get(
+                token=token, token_type=TOKEN_TYPES.PASSWORD_RESET
+            )
+        except VerificationToken.DoesNotExist:
+            raise serializers.ValidationError(TOKEN_ERRORS.INVALID_TOKEN)
+        except Exception as exc:
+            logger.error(exc)
+            raise APIException()
+
+        if obj.is_expired():
+            raise serializers.ValidationError(TOKEN_ERRORS.TOKEN_EXPIRED)
+
+        if obj.is_used:
+            raise serializers.ValidationError(TOKEN_ERRORS.TOKEN_ALREADY_USED)
+
+        if not obj.is_valid():
+            raise serializers.ValidationError(TOKEN_ERRORS.INVALID_TOKEN)
+
+        return attrs
+
+    def save(self, **kwargs):
+        """
+        Mark token as used and reset user's password.
+        Returns the verification token object after successful verification.
+        """
+        token = self.validated_data.get("token")
+        raw_password = self.validated_data.get("password")
+
+        obj = VerificationToken.objects.get(
+            token=token, token_type=TOKEN_TYPES.PASSWORD_RESET
+        )
+        user = obj.user
+        user.set_password(raw_password)
+        user.save()
+        obj.mark_as_used()
         return obj

@@ -5,11 +5,13 @@ from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 from rest_framework_simplejwt.views import TokenObtainPairView
 
 from apps.authentication.serializers import (
+    EmailVerificationTokenSerializer,
     ProfileReadSerializer,
     ProfileWriteSerializer,
+    ResetPasswordTokenSerializer,
+    SendResetPasswordTokenSerializer,
     UserReadSerializer,
     UserWriteSerializer,
-    VerificationTokenSerializer,
 )
 from apps.authentication.tasks import send_verification_email
 from utils.envelope import Envelope
@@ -90,7 +92,7 @@ class VerifyEmailView(APIView):
         if request.user.email_verified:
             return Envelope.success_response("email already verified")
 
-        serializer = VerificationTokenSerializer(
+        serializer = EmailVerificationTokenSerializer(
             data=request.data, context={"request": request}
         )
         if serializer.is_valid():
@@ -116,4 +118,26 @@ class SendEmailVerificationView(APIView):
         )
         return Envelope.success_response(
             data="email sent", status_code=status.HTTP_202_ACCEPTED
+        )
+
+
+class SendPasswordResetView(APIView):
+    def post(self, request):
+        serializer = SendResetPasswordTokenSerializer(data=request.data)
+        if serializer.is_valid():
+            result = serializer.save()
+            return Envelope.success_response(data=result)
+        return Envelope.error_response(
+            error=serializer.errors, status_code=status.HTTP_400_BAD_REQUEST
+        )
+
+
+class ResetPasswordView(APIView):
+    def post(self, request):
+        serializer = ResetPasswordTokenSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Envelope.success_response("password reset successful")
+        return Envelope.error_response(
+            error=serializer.errors, status_code=status.HTTP_400_BAD_REQUEST
         )
