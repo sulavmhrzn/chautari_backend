@@ -5,7 +5,9 @@ from apps.authentication.views import (
     CurrentUserView,
     CustomTokenObtainPairView,
     ProfileView,
+    ResetPasswordView,
     SendEmailVerificationView,
+    SendPasswordResetView,
     SignUpView,
     VerifyEmailView,
 )
@@ -22,4 +24,10 @@ urlpatterns = [
         SendEmailVerificationView.as_view(),
         name="send_verification_email",
     ),
+    path(
+        "send-password-reset/",
+        SendPasswordResetView.as_view(),
+        name="send_password_reset",
+    ),
+    path("reset-password/", ResetPasswordView.as_view(), name="reset_password"),
 ]

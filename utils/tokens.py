@@ -41,4 +41,11 @@ def create_email_verification_token(user, **kwargs):
 
 
 def create_password_reset_token(user, **kwargs):
-    pass
+    """Create a password reset token."""
+    return create_verification_token(
+        user=user,
+        token_type=TOKEN_TYPES.PASSWORD_RESET,
+        expires_in_minutes=settings.PASSWORD_RESET_TOKEN_EXPIRES_IN_MINUTES,
+        use_numeric=True,
+        **kwargs,
+    )
