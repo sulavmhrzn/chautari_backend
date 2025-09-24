@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     "apps.authentication",
     "apps.listings",
     "apps.profiles",
+    "apps.reviews",
 ]
 
 
