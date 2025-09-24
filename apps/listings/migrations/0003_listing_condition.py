@@ -4,15 +4,25 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('listings', '0002_alter_category_options_listingimage'),
+        ("listings", "0002_alter_category_options_listingimage"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='listing',
-            name='condition',
-            field=models.CharField(choices=[('brand_new', 'Brand New'), ('barely_used', 'Barely Used'), ('lightly_used', 'Lightly Used'), ('well_used', 'Well Used'), ('heavily_used', 'Heavily Used'), ('not_working', 'Not Working')], default='barely_used', max_length=100),
+            model_name="listing",
+            name="condition",
+            field=models.CharField(
+                choices=[
+                    ("brand_new", "Brand New"),
+                    ("barely_used", "Barely Used"),
+                    ("lightly_used", "Lightly Used"),
+                    ("well_used", "Well Used"),
+                    ("heavily_used", "Heavily Used"),
+                    ("not_working", "Not Working"),
+                ],
+                default="barely_used",
+                max_length=100,
+            ),
         ),
     ]

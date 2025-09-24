@@ -5,23 +5,37 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('listings', '0001_initial'),
+        ("listings", "0001_initial"),
     ]
 
     operations = [
         migrations.AlterModelOptions(
-            name='category',
-            options={'verbose_name_plural': 'categories'},
+            name="category",
+            options={"verbose_name_plural": "categories"},
         ),
         migrations.CreateModel(
-            name='ListingImage',
+            name="ListingImage",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('image', models.ImageField(upload_to='listing_images/')),
-                ('uploaded_at', models.DateTimeField(auto_now_add=True)),
-                ('listing', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='images', to='listings.listing')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("image", models.ImageField(upload_to="listing_images/")),
+                ("uploaded_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "listing",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="images",
+                        to="listings.listing",
+                    ),
+                ),
             ],
         ),
     ]
