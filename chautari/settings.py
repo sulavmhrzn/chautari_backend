@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     "django_filters",
     "apps.authentication",
     "apps.listings",
+    "apps.profiles",
 ]
 
 

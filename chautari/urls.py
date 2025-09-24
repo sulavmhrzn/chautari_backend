@@ -10,6 +10,7 @@ urlpatterns = [
     path("api/v1/ping", PingView.as_view(), name="ping"),
     path("api/v1/auth/", include("apps.authentication.urls")),
     path("api/v1/listings/", include("apps.listings.urls")),
+    path("api/v1/profiles/", include("apps.profiles.urls")),
 ]
 if getattr(settings, "DEBUG"):
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
