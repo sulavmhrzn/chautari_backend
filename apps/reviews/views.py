@@ -1,15 +1,22 @@
 from django.db.models import Avg, Count
+from django.http import Http404
+from django.shortcuts import get_object_or_404
 from rest_framework import permissions, status
 from rest_framework.viewsets import ViewSet
 
-from apps.permissions import IsEmailVerified
+from apps.permissions import IsEmailVerified, IsReviewOwner
 from apps.reviews.models import Review
 from apps.reviews.serializers import ReviewReadSerializer, ReviewWriteSerializer
 from utils.envelope import Envelope
 
 
 class ReviewViewSet(ViewSet):
-    permission_classes = [permissions.IsAuthenticated, IsEmailVerified]
+    permission_classes = [permissions.IsAuthenticated, IsEmailVerified, IsReviewOwner]
+
+    def get_object(self):
+        review = get_object_or_404(Review, id=self.kwargs.get("review_id"))
+        self.check_object_permissions(self.request, review)
+        return review
 
     def list(self, request):
         reviews = request.user.received_reviews.all()
@@ -38,6 +45,16 @@ class ReviewViewSet(ViewSet):
         return Envelope.error_response(
             error=serializer.errors, status_code=status.HTTP_400_BAD_REQUEST
         )
+
+    def destroy(self, request, review_id):
+        try:
+            obj = self.get_object()
+        except Http404:
+            return Envelope.error_response(
+                error="review not found", status_code=status.HTTP_404_NOT_FOUND
+            )
+        obj.delete()
+        return Envelope.success_response(data={"message": "review deleted"})
 
 
 class UserReviewViewSet(ViewSet):
