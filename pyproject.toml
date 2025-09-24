@@ -16,6 +16,7 @@ dependencies = [
     "pillow>=11.3.0",
     "pre-commit>=4.3.0",
     "psycopg>=3.2.10",
+    "rich>=14.1.0",
 ]
 
 [dependency-groups]
