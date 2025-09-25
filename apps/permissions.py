@@ -13,3 +13,12 @@ class IsEmailVerified(IsAuthenticated):
 
     def has_permission(self, request, view):
         return super().has_permission(request, view) and request.user.email_verified
+
+
+class IsReviewOwner(IsAuthenticated):
+    message = "You are not the review owner."
+
+    def has_object_permission(self, request, view, obj):
+        if not request.user:
+            return False
+        return obj.reviewer == request.user

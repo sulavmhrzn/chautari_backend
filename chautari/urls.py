@@ -11,6 +11,7 @@ urlpatterns = [
     path("api/v1/auth/", include("apps.authentication.urls")),
     path("api/v1/listings/", include("apps.listings.urls")),
     path("api/v1/profiles/", include("apps.profiles.urls")),
+    path("api/v1/reviews/", include("apps.reviews.urls")),
 ]
 if getattr(settings, "DEBUG"):
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
