@@ -1,7 +1,13 @@
 from django.contrib import admin
 from django.utils.html import format_html
 
-from apps.listings.models import Category, Listing, ListingImage, SavedListing
+from apps.listings.models import (
+    Category,
+    Listing,
+    ListingComment,
+    ListingImage,
+    SavedListing,
+)
 
 
 @admin.register(Category)
@@ -38,3 +44,8 @@ class ListingImageAdmin(admin.ModelAdmin):
 @admin.register(SavedListing)
 class SavedListingAdmin(admin.ModelAdmin):
     list_display = ("user", "listing")
+
+
+@admin.register(ListingComment)
+class ListingCommentAdmin(admin.ModelAdmin):
+    list_display = ("author", "listing", "content", "created_at", "updated_at")

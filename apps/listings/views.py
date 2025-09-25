@@ -1,4 +1,5 @@
 from django.db.models import Count, Q
+from django.http import Http404
 from django.shortcuts import get_object_or_404
 from django_filters import rest_framework as filters
 from rest_framework import permissions, status
@@ -12,6 +13,8 @@ from apps.listings.models import Category, Listing, SavedListing
 from apps.listings.paginations import ListingPageNumberPagination
 from apps.listings.serializers import (
     CategoryReadSerializer,
+    ListingCommentReadSerializer,
+    ListingCommentWriteSerializer,
     ListingReadSerializer,
     ListingWriteSerializer,
     SavedListingReadSerializer,
@@ -191,3 +194,43 @@ class SavedListingsView(ViewSet):
         return Envelope.error_response(
             error=serializer.errors, status_code=status.HTTP_400_BAD_REQUEST
         )
+
+
+class ListingCommentView(ViewSet):
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+
+    def create(self, request, slug):
+        try:
+            listing = get_object_or_404(
+                Listing, slug=self.kwargs.get("slug"), is_active=True
+            )
+        except Http404:
+            return Envelope.error_response(
+                error={"message": "listing not found"},
+                status_code=status.HTTP_404_NOT_FOUND,
+            )
+        serializer = ListingCommentWriteSerializer(
+            data=request.data, context={"request": request}
+        )
+        if serializer.is_valid():
+            data = serializer.save(listing=listing, author=request.user)
+            return Envelope.success_response(
+                data=ListingCommentReadSerializer(data).data,
+                status_code=status.HTTP_201_CREATED,
+            )
+        return Envelope.success_response("comments")
+
+    def list(self, request, slug):
+        try:
+            listing = get_object_or_404(
+                Listing, slug=self.kwargs.get("slug"), is_active=True
+            )
+        except Http404:
+            return Envelope.error_response(
+                error={"message": "listing not found"},
+                status_code=status.HTTP_404_NOT_FOUND,
+            )
+        serializer = ListingCommentReadSerializer(
+            listing.comments.all(), many=True, context={"request": request}
+        )
+        return Envelope.success_response(data={"comments": serializer.data})

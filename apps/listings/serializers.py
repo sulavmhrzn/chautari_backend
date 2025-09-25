@@ -1,7 +1,7 @@
 from django.db import IntegrityError, transaction
 from rest_framework import serializers
 
-from .models import Category, Listing, ListingImage, SavedListing, User
+from .models import Category, Listing, ListingComment, ListingImage, SavedListing, User
 
 
 class CategoryReadSerializer(serializers.ModelSerializer):
@@ -124,3 +124,42 @@ class SavedListingWriteSerializer(serializers.ModelSerializer):
         except IntegrityError:
             SavedListing.objects.filter(user=user, listing=listing).delete()
             return None
+
+
+class ListingCommentWriteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ListingComment
+        fields = ["listing", "author", "content"]
+        read_only_fields = ["listing", "author"]
+
+
+class ListingCommentReadSerializer(serializers.ModelSerializer):
+    listing = serializers.StringRelatedField()
+    author = serializers.StringRelatedField()
+    can_delete = serializers.SerializerMethodField()
+    can_edit = serializers.SerializerMethodField()
+
+    class Meta:
+        model = ListingComment
+        fields = [
+            "listing",
+            "author",
+            "content",
+            "can_delete",
+            "can_edit",
+            "created_at",
+            "updated_at",
+        ]
+        read_only_fields = ["__all__"]
+
+    def get_can_delete(self, instance):
+        request = self.context.get("request")
+        if not request or not hasattr(request, "user"):
+            return False
+        return instance.author == request.user
+
+    def get_can_edit(self, instance):
+        request = self.context.get("request")
+        if not request or not hasattr(request, "user"):
+            return False
+        return instance.author == request.user

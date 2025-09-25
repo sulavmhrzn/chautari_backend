@@ -2,6 +2,7 @@ from django.urls import path
 
 from apps.listings.views import (
     CategoryView,
+    ListingCommentView,
     ListingView,
     MyListingsView,
     SavedListingsView,
@@ -30,5 +31,9 @@ urlpatterns = [
         "<slug:slug>/",
         ListingView.as_view({"get": "retrieve", "delete": "destroy", "put": "update"}),
         name="listings-detail",
+    ),
+    path(
+        "<slug:slug>/comments/",
+        ListingCommentView.as_view({"post": "create", "get": "list"}),
     ),
 ]
